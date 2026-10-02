@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>المنيو</title>
+<style>
+:root{--bg:#f7f5f2;--card:#fff;--tx:#1d1a17;--mu:#78716c;--bd:#ece7e1;--ac:#b4532a;--acs:#fbeee7;--r:18px}
+@media (prefers-color-scheme:dark){:root{--bg:#0f0d0b;--card:#1a1714;--tx:#f5f1ec;--mu:#a8a098;--bd:#2b2622;--acs:#2a1c14}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Cairo","Tahoma","Segoe UI",sans-serif;padding-bottom:env(safe-area-inset-bottom,0)}
+.hero{position:relative;padding:calc(env(safe-area-inset-top,0px) + 38px) 20px 56px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--ac),#2b1a12)}
+.logo{width:76px;height:76px;margin:0 auto 12px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:38px;overflow:hidden;border:2px solid rgba(255,255,255,.5)}
+.logo img{width:100%;height:100%;object-fit:cover}
+.hero h1{margin:0;font-size:26px}
+.hero p{margin:6px 0 0;opacity:.85;font-size:14px}
+.tbl{display:inline-block;margin-top:12px;background:rgba(255,255,255,.2);padding:4px 14px;border-radius:20px;font-size:13px}
+.wrap{max-width:680px;margin:-28px auto 0;padding:0 14px 90px;position:relative}
+.search{width:100%;padding:14px 18px;border-radius:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.08);outline:none}
+.search:focus{border-color:var(--ac)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;overflow-x:auto;padding:12px 0;background:var(--bg);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:none;padding:8px 16px;border-radius:999px;background:var(--card);border:1px solid var(--bd);color:var(--tx);text-decoration:none;font-size:14px;white-space:nowrap}
+nav a.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+h2{font-size:19px;margin:22px 4px 10px}
+.item{display:flex;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.item.off{opacity:.5}
+.pic{flex:none;width:96px;height:96px;border-radius:14px;background:var(--acs);display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:cover}
+.in{flex:1;min-width:0;display:flex;flex-direction:column}
+.in h3{margin:0 0 4px;font-size:16px}
+.in p{margin:0;color:var(--mu);font-size:13px;line-height:1.6;flex:1}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px}
+.price{font-weight:700;color:var(--ac);font-size:16px}
+.tag{font-size:11px;background:var(--acs);color:var(--ac);padding:3px 10px;border-radius:999px;font-weight:700}
+.tag.x{background:#eee;color:#888}
+.empty{text-align:center;color:var(--mu);padding:40px 0}
+.wa{position:fixed;inset-inline-start:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);background:#25d366;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+footer{text-align:center;color:var(--mu);font-size:12px;padding:10px}
+.skel{height:110px;border-radius:var(--r);background:var(--card);border:1px solid var(--bd);margin-bottom:12px;opacity:.6}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="logo" id="logo"></div>
+  <h1 id="rname"></h1>
+  <p id="rtag"></p>
+  <span class="tbl" id="tbl" hidden></span>
+</header>
+<div class="wrap">
+  <input class="search" id="q" type="search" placeholder="ابحث عن صنف...">
+  <nav id="nav"></nav>
+  <main id="menu"><div class="skel"></div><div class="skel"></div></main>
+  <footer id="foot"></footer>
+</div>
+<a class="wa" id="wa" hidden target="_blank" rel="noopener">واتساب</a>
+
+<script>
+/* =====================================================================
+   دليل الاستخدام (للتاجر):
+   1) كل مطعم له سطر في RESTAURANTS. المفتاح هو الاسم المختصر في اللينك.
+      مثال لينك: yourdomain.com/?r=gourmet     أو بإضافة الترابيزة: ?r=gourmet&table=5
+   2) لكل مطعم Google Sheet: File > Share > Publish to web > اختار الشيت > CSV
+      وانسخ اللينك في sheet. أعمدة الشيت بالترتيب (الصف الأول عناوين):
+      category | name | description | price | image | tag | available
+      - image: لينك صورة (اختياري)       - tag: مثال "جديد" أو "الأكثر طلباً"
+      - available: اكتب "لا" لو الصنف خلص (يظهر "غير متاح")
+   3) لو sheet فاضي، بتظهر بيانات تجريبية (demo).
+   4) لما المطعم يوقف الاشتراك: غيّر active إلى false وتظهر له رسالة.
+   ===================================================================== */
+const RESTAURANTS = {
+  gourmet: {
+    name: "مطعم الذوق الرفيع", tag: "Le Gourmet Restaurant", logo: "🍽️", logoImg: "",
+    color: "#b4532a", currency: "ج.م", whatsapp: "", sheet: "", active: true
+  },
+  demo2: {
+    name: "كافيه الواحة", tag: "قهوة ومشروبات وحلويات", logo: "☕",
+    color: "#0f766e", currency: "ج.م", whatsapp: "", sheet: "", active: true
+  }
+};
+const DEFAULT_R = "gourmet";
+const BRAND = "";  // اسم شركتك يظهر أسفل الصفحة، مثال: "بدعم من YourBrand"
+
+const DEMO = `category,name,description,price,image,tag,available
+الأطباق الرئيسية,كباب مشوي,نص كيلو كباب مع أرز وسلطة وطحينة,260,,الأكثر طلباً,نعم
+الأطباق الرئيسية,فراخ مشوية,نص فرخة مشوية بالأعشاب مع بطاطس,180,,,نعم
+الأطباق الرئيسية,كفتة مشوية,كفتة بلدي مع أرز وعيش,200,,جديد,نعم
+المقبلات,حمص,حمص بالطحينة وزيت الزيتون,35,,,نعم
+المقبلات,بطاطس مقلية,طبق بطاطس مقرمشة,40,,,نعم
+المشروبات,عصير ليمون,ليمون طازج بالنعناع,35,,,نعم
+المشروبات,عصير مانجو,مانجو طبيعي,45,,جديد,لا
+الحلويات,أم علي,أم علي بالمكسرات والقشطة,55,,الأكثر طلباً,نعم`;
+
+const EMO = {"كباب":"🍢","فراخ":"🍗","كفتة":"🥩","حمص":"🥣","بطاطس":"🍟","ليمون":"🍋","مانجو":"🥭","شاي":"🍵","قهوة":"☕","علي":"🍮","كنافة":"🍯","سلطة":"🥗","بيتزا":"🍕","برجر":"🍔","عصير":"🧃","مكرونة":"🍝","سمك":"🐟","شوربة":"🍲","آيس":"🍨","كيك":"🍰"};
+const emo = n => { for (const k in EMO) if (n.includes(k)) return EMO[k]; return "🍽️"; };
+
+function parseCSV(t){
+  const rows=[];let r=[],c="",q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){ if(ch=='"'){ if(t[i+1]=='"'){c+='"';i++} else q=false } else c+=ch }
+    else if(ch=='"') q=true;
+    else if(ch==","){r.push(c);c=""}
+    else if(ch=="\n"||ch=="\r"){ if(ch=="\r"&&t[i+1]=="\n")i++; r.push(c);c="";rows.push(r);r=[] }
+    else c+=ch }
+  if(c||r.length){r.push(c);rows.push(r)}
+  return rows.filter(x=>x.some(v=>v.trim()));
+}
+function toItems(csv){
+  const rows=parseCSV(csv).slice(1);
+  const cats=[],map={};
+  rows.forEach(r=>{
+    const [cat,name,desc,price,img,tag,av]=r.map(v=>(v||"").trim());
+    if(!name) return;
+    const k=cat||"أخرى";
+    if(!map[k]){map[k]=[];cats.push(k)}
+    map[k].push({name,desc,price,img,tag,off:/^(لا|no|false|0)$/i.test(av)});
+  });
+  return cats.map(c=>({cat:c,items:map[c]}));
+}
+
+const $=id=>document.getElementById(id);
+const P=new URLSearchParams(location.search);
+const key=P.get("r")||DEFAULT_R;
+const R=RESTAURANTS[key]||RESTAURANTS[DEFAULT_R];
+document.documentElement.style.setProperty("--ac",R.color||"#b4532a");
+document.title="منيو "+R.name;
+$("rname").textContent=R.name;$("rtag").textContent=R.tag||"";
+const lg=$("logo");
+if(R.logoImg){const im=document.createElement("img");im.src=R.logoImg;im.alt=R.name;lg.appendChild(im)}else lg.textContent=R.logo||"🍽️";
+const tb=P.get("table");
+if(tb){$("tbl").hidden=false;$("tbl").textContent="ترابيزة رقم "+tb}
+if(R.whatsapp){const w=$("wa");w.hidden=false;w.href="https://wa.me/"+R.whatsapp.replace(/\D/g,"")+"?text="+encodeURIComponent("مرحباً"+(tb?" - ترابيزة "+tb:""))}
+if(BRAND)$("foot").textContent=BRAND;
+
+let DATA=[];
+function render(){
+  const q=$("q").value.trim();
+  const m=$("menu"),nav=$("nav");
+  m.innerHTML="";nav.innerHTML="";
+  let any=false;
+  DATA.forEach((s,i)=>{
+    const list=s.items.filter(it=>!q||(it.name+" "+it.desc).includes(q));
+    if(!list.length) return;
+    any=true;
+    const a=document.createElement("a");a.href="#s"+i;a.textContent=s.cat;a.dataset.id="s"+i;
+    a.onclick=e=>{e.preventDefault();document.getElementById("s"+i).scrollIntoView({block:"start"})};
+    nav.appendChild(a);
+    const h=document.createElement("h2");h.id="s"+i;h.textContent=s.cat;h.style.scrollMarginTop="70px";m.appendChild(h);
+    list.forEach(it=>{
+      const d=document.createElement("div");d.className="item"+(it.off?" off":"");
+      const pic=document.createElement("div");pic.className="pic";
+      if(it.img){const im=document.createElement("img");im.src=it.img;im.alt=it.name;im.loading="lazy";im.onerror=()=>{pic.textContent=emo(it.name)};pic.appendChild(im)}else pic.textContent=emo(it.name);
+      const inn=document.createElement("div");inn.className="in";
+      const h3=document.createElement("h3");h3.textContent=it.name;
+      const p=document.createElement("p");p.textContent=it.desc;
+      const row=document.createElement("div");row.className="row";
+      const pr=document.createElement("span");pr.className="price";pr.textContent=it.price?it.price+" "+(R.currency||""):"";
+      row.appendChild(pr);
+      if(it.off||it.tag){const t=document.createElement("span");t.className="tag"+(it.off?" x":"");t.textContent=it.off?"غير متاح":it.tag;row.appendChild(t)}
+      inn.append(h3,p,row);d.append(pic,inn);m.appendChild(d);
+    });
+  });
+  if(!any){m.innerHTML='<div class="empty">لا توجد نتائج</div>'}
+  const f=nav.firstChild;if(f)f.classList.add("on");
+}
+$("q").addEventListener("input",render);
+window.addEventListener("scroll",()=>{
+  const hs=[...document.querySelectorAll("h2")];let cur=null;
+  hs.forEach(h=>{if(h.getBoundingClientRect().top<120)cur=h.id});
+  document.querySelectorAll("nav a").forEach(a=>{const on=a.dataset.id===cur;a.classList.toggle("on",on);if(on)a.scrollIntoView({inline:"center",block:"nearest"})});
+},{passive:true});
+
+(async function(){
+  if(R.active===false){$("menu").innerHTML='<div class="empty">هذه الخدمة متوقفة مؤقتاً. برجاء التواصل مع المطعم.</div>';return}
+  let csv=DEMO;
+  if(R.sheet){
+    try{const r=await fetch(R.sheet,{cache:"no-store"});if(!r.ok)throw 0;csv=await r.text()}
+    catch(e){$("menu").innerHTML='<div class="empty">تعذر تحميل المنيو. حاول مرة أخرى.</div>';return}
+  }
+  DATA=toItems(csv);render();
+})();
+</script>
+</body>
+</html>
